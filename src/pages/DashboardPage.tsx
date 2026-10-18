@@ -23,8 +23,6 @@ export const DashboardPage: React.FC = () => {
     courses,
     achievements,
     setActivePage,
-    support,
-    supportCountdown,
     contactProfessor,
     setActiveCourseModal,
     setActiveAchievementModal,
@@ -347,10 +345,10 @@ export const DashboardPage: React.FC = () => {
                   Professor Burzin
                 </h4>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Professor / Student Mentor
+                  Senior Developer & Mentor
                 </p>
                 <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                  {support.status === 'online' ? '● Available in Support' : '○ Support taking short break'}
+                  ● Faculty Mentor & Curriculum Director
                 </span>
               </div>
             </div>
@@ -365,7 +363,7 @@ export const DashboardPage: React.FC = () => {
                 className="w-full py-2.5 px-4 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5"
               >
                 <Headphones className="w-3.5 h-3.5" />
-                Contact Professor
+                Contact AI Support
               </button>
               <button
                 onClick={() => setActivePage('courses')}
@@ -381,30 +379,16 @@ export const DashboardPage: React.FC = () => {
           <section className="p-5 rounded-2xl bg-white dark:bg-[#1A1A1A] border border-champagne-300/80 dark:border-neutral-800 shadow-luxury">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Support Availability
+                Support Status
               </span>
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                  support.status === 'online'
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                    : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
-                }`}
-              >
-                {support.status === 'online' ? 'Online' : 'Offline'}
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                AI Support Online
               </span>
             </div>
 
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-              {support.status === 'online'
-                ? 'Support is now online. Simulated assistant replies are active.'
-                : 'Support is currently offline. Our support team is taking a short break. Please check back later.'}
+              Our AI Support Assistant is online 24/7 with automatic model fallback to assist you with coursework, attendance, Student ID cards, and SHEIN clothing benefits.
             </p>
-
-            {support.status !== 'online' && (
-              <p className="mt-2 text-xs font-mono text-burgundy font-semibold">
-                Available in: {supportCountdown}
-              </p>
-            )}
 
             <button
               onClick={() => setActivePage('support')}

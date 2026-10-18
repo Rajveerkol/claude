@@ -104,13 +104,14 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   isNotice?: boolean;
+  modelUsed?: string;
 }
 
 export interface SupportState {
-  initializedAt: number;
-  status: 'offline' | 'online';
+  status: 'online' | 'offline';
   messages: ChatMessage[];
   lastCheckedAt?: number;
+  isAiResponding?: boolean;
 }
 
 export interface SettingsState {

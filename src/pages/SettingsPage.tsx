@@ -5,12 +5,12 @@ import {
   Moon,
   Zap,
   Trash2,
-  RotateCw,
   Sparkles,
   ShieldAlert,
   CheckCircle2,
-  Clock,
   User,
+  Bot,
+  MessageSquare,
 } from 'lucide-react';
 import { usePortal } from '../context/PortalContext';
 
@@ -19,24 +19,20 @@ export const SettingsPage: React.FC = () => {
     settings,
     updateSettings,
     resetAllData,
-    resetSupportSession,
-    fastForwardSupportOnline,
-    support,
-    supportCountdown,
+    clearSupportChat,
+    setActivePage,
     setIsEditProfileOpen,
     profile,
   } = usePortal();
 
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
-  const [isConfirmResetSupport, setIsConfirmResetSupport] = useState(false);
+  const [isConfirmClearChat, setIsConfirmClearChat] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setSuccessToast(msg);
     setTimeout(() => setSuccessToast(null), 3000);
   };
-
-  const isOnline = support.status === 'online';
 
   return (
     <div className="space-y-8 animate-fade-in pb-12 max-w-4xl mx-auto">
@@ -52,7 +48,7 @@ export const SettingsPage: React.FC = () => {
               Settings & Environment
             </h1>
             <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 font-sans mt-1">
-              Customize appearance, manage local storage data, and control support session states.
+              Customize appearance, manage local storage data, and inspect AI support services.
             </p>
           </div>
 
@@ -235,84 +231,73 @@ export const SettingsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Support Session Controller (7-Hour Reset & Fast-Forward Simulator) */}
+      {/* 5. Live AI Support Service & Diagnostics */}
       <section className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#1A1A1A] border border-champagne-300/80 dark:border-neutral-800 shadow-luxury space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="font-serif font-bold text-xl text-richblack dark:text-ivory-100">
-              Support Session & 7-Hour Timer Control
+              AI Support Service & Status
             </h3>
             <p className="text-xs text-neutral-500">
-              Manage the 7-hour offline/online timer cycle required by portal protocol
+              Gemini AI integration status, candidate model fallback, and conversation management
             </p>
           </div>
 
-          <span
-            className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-              isOnline
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
-            }`}
-          >
-            {isOnline ? 'Online' : 'Offline'}
+          <span className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            AI Support Online
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-champagne-50/60 dark:bg-neutral-800/40 border border-champagne-200/80 dark:border-neutral-700 text-xs space-y-2">
+        <div className="p-4 rounded-xl bg-champagne-50/60 dark:bg-neutral-800/40 border border-champagne-200/80 dark:border-neutral-700 text-xs space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-neutral-500">Current Support State:</span>
-            <span className="font-bold text-richblack dark:text-neutral-100 uppercase">
-              {support.status}
+            <span className="text-neutral-500">Operational Mode:</span>
+            <span className="font-bold text-richblack dark:text-neutral-100">
+              Always Online (24/7)
             </span>
           </div>
-          {!isOnline && (
-            <div className="flex items-center justify-between">
-              <span className="text-neutral-500">Countdown to Online:</span>
-              <span className="font-mono font-bold text-burgundy">{supportCountdown}</span>
-            </div>
-          )}
-          <p className="text-[11px] text-neutral-500 leading-relaxed pt-1">
-            Support starts offline. After 7 elapsed hours, the portal automatically transitions Professor Burzin to ONLINE. You can reset the session back to 0h or test the online state instantly below.
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500">Model Router Architecture:</span>
+            <span className="font-mono text-burgundy dark:text-champagne-300 text-[11px] font-semibold">
+              Automatic Model Fallback
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500">Supported Model Pool:</span>
+            <span className="font-mono text-neutral-600 dark:text-neutral-300 text-[11px]">
+              gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500">API Security & Proxy:</span>
+            <span className="font-bold text-emerald-700 dark:text-emerald-400">
+              Server-side Protected (/api/chat)
+            </span>
+          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed pt-1 border-t border-neutral-200/60 dark:border-neutral-700/60">
+            The Support Center status is permanently online. When a question is submitted, the server router evaluates the preferred candidate model, applying jittered backoff and cooldown tracking for retryable errors.
           </p>
         </div>
 
-        {/* Buttons to Reset or Fast-Forward */}
         <div className="flex flex-wrap gap-3 pt-2">
           <button
-            onClick={() => setIsConfirmResetSupport(true)}
-            className="px-4 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-richblack dark:text-ivory-100 text-xs font-semibold border border-neutral-300 dark:border-neutral-700 transition-all flex items-center gap-1.5"
+            onClick={() => setActivePage('support')}
+            className="px-4 py-2.5 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
           >
-            <RotateCw className="w-3.5 h-3.5 text-burgundy" />
-            Reset Support Session (Restart 7h Cycle)
+            <Sparkles className="w-3.5 h-3.5" />
+            Open Live Support Center
           </button>
 
-          {!isOnline ? (
-            <button
-              onClick={() => {
-                fastForwardSupportOnline();
-                showToast('Fast-forwarded 7 hours: Support is now ONLINE!');
-              }}
-              className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Fast-Forward 7 Hours (Simulate Online)
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                resetSupportSession();
-                showToast('Support session reset: Support is now OFFLINE (7h timer restarted)');
-              }}
-              className="px-4 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
-            >
-              <Clock className="w-3.5 h-3.5" />
-              Simulate Offline (Restart 7h Timer)
-            </button>
-          )}
+          <button
+            onClick={() => setIsConfirmClearChat(true)}
+            className="px-4 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-richblack dark:text-ivory-100 text-xs font-semibold border border-neutral-300 dark:border-neutral-700 transition-all flex items-center gap-1.5"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-neutral-500" />
+            Clear Support Chat History
+          </button>
         </div>
       </section>
 
-      {/* 6. Danger Zone: Clear Local Application Data (Section 12) */}
+      {/* 6. Danger Zone: Clear Local Application Data */}
       <section className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#1A1A1A] border border-red-200/80 dark:border-red-950/60 shadow-luxury space-y-4">
         <div>
           <h3 className="font-serif font-bold text-xl text-red-700 dark:text-red-400">
@@ -341,37 +326,37 @@ export const SettingsPage: React.FC = () => {
         </button>
       </section>
 
-      {/* Reset Support Session Confirmation Modal */}
-      {isConfirmResetSupport && (
+      {/* Clear Chat Confirmation Modal */}
+      {isConfirmClearChat && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-white dark:bg-[#1E1E1E] rounded-2xl p-6 shadow-2xl border border-champagne-300 dark:border-neutral-800 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-champagne-200 dark:bg-neutral-800 text-burgundy mx-auto flex items-center justify-center">
-              <RotateCw className="w-6 h-6" />
+              <Bot className="w-6 h-6" />
             </div>
             <div>
               <h4 className="font-serif font-bold text-lg text-richblack dark:text-ivory-100">
-                Reset Support Session?
+                Clear Support Conversation?
               </h4>
               <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
-                This will reset the support initialization timestamp back to 0 hours, restarting the 7-hour offline timer and re-initializing the local conversation.
+                This will reset your local AI Support conversation history in this browser back to the welcome message.
               </p>
             </div>
             <div className="flex gap-2.5 pt-2">
               <button
-                onClick={() => setIsConfirmResetSupport(false)}
+                onClick={() => setIsConfirmClearChat(false)}
                 className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-200 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => {
-                  resetSupportSession();
-                  setIsConfirmResetSupport(false);
-                  showToast('Support session reset to 0h offline state');
+                  clearSupportChat();
+                  setIsConfirmClearChat(false);
+                  showToast('AI Support conversation reset');
                 }}
                 className="flex-1 py-2 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs font-semibold shadow-sm transition-all"
               >
-                Yes, Reset Session
+                Yes, Clear Chat
               </button>
             </div>
           </div>

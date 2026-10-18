@@ -34,7 +34,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activePage,
     setActivePage,
     notifications,
-    support,
     contactProfessor,
   } = usePortal();
 
@@ -55,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'achievements', label: 'Achievements', icon: Award },
     { id: 'rewards', label: 'Rewards & Benefits', icon: Gift, badge: 'SHEIN', badgeColor: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300' },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined, badgeColor: 'bg-burgundy text-white' },
-    { id: 'support', label: 'Support Center', icon: Headphones, badge: support.status === 'online' ? 'Online' : 'Offline', badgeColor: support.status === 'online' ? 'bg-emerald-500 text-white' : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300' },
+    { id: 'support', label: 'Support Center', icon: Headphones, badge: 'AI Online', badgeColor: 'bg-emerald-600 text-white' },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

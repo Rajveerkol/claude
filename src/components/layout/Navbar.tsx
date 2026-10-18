@@ -36,7 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     markNotificationAsRead,
     markAllNotificationsAsRead,
     deleteNotification,
-    support,
     setIsEditProfileOpen,
   } = usePortal();
 
@@ -142,22 +141,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Support status pill in header */}
           <button
             onClick={() => setActivePage('support')}
-            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              support.status === 'online'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700'
-            }`}
-            title={`Professor Burzin is ${support.status === 'online' ? 'Online' : 'Offline'}`}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:shadow-sm"
+            title="AI Support is Online · Click to open Support Center"
           >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                support.status === 'online'
-                  ? 'bg-emerald-500 animate-pulse'
-                  : 'bg-neutral-400'
-              }`}
-            />
-            <span className="font-sans text-[11px] uppercase tracking-wider">
-              Prof. Burzin: {support.status === 'online' ? 'Online' : 'Offline'}
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-sans text-[11px] uppercase tracking-wider font-semibold">
+              AI Support: Online
             </span>
           </button>
 

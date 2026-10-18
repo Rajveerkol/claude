@@ -28,8 +28,6 @@ import {
   clearAllPortalStorage,
 } from '../utils/storage';
 
-const SEVEN_HOURS_MS = 7 * 60 * 60 * 1000; // 25,200,000 milliseconds
-
 interface PortalContextType {
   activePage: PageId;
   setActivePage: (page: PageId) => void;
@@ -47,16 +45,13 @@ interface PortalContextType {
   settings: SettingsState;
   updateSettings: (updated: Partial<SettingsState>) => void;
   resetAllData: () => void;
-  // Support Center state & methods
+  // Live AI Support Center state & methods
   support: SupportState;
-  supportCountdown: string;
   isSupportInitialized: boolean;
   initSupportIfNeeded: () => void;
   checkSupportAvailability: () => void;
-  sendChatMessage: (text: string) => void;
+  sendChatMessage: (text: string) => Promise<void>;
   clearSupportChat: () => void;
-  resetSupportSession: () => void;
-  fastForwardSupportOnline: () => void;
   contactProfessor: (prefillTopic?: string) => void;
   // Active modal helpers
   activeCourseModal: Course | null;
@@ -72,6 +67,14 @@ interface PortalContextType {
 }
 
 const PortalContext = createContext<PortalContextType | undefined>(undefined);
+
+const INITIAL_WELCOME_MESSAGE: ChatMessage = {
+  id: 'msg-welcome-sys',
+  sender: 'assistant',
+  senderName: 'AI Support Assistant',
+  text: 'Welcome to the CLAUDE × SHEIN AI Student Support Center. I am your academic AI assistant. How can I assist you today with your courses, attendance, Student ID card, or SHEIN clothing benefits?',
+  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+};
 
 export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Navigation state
@@ -213,39 +216,31 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [settings.reducedMotion]);
 
-  // 9. Support Center & 7-Hour Status Logic
+  // 9. Live AI Support Center State (Always Online)
   const [support, setSupport] = useState<SupportState>(() => {
     const stored = loadFromStorage<SupportState | null>(STORAGE_KEYS.SUPPORT_STATE, null);
-    if (stored && stored.initializedAt) {
-      const elapsed = Date.now() - stored.initializedAt;
-      const isOnline = elapsed >= SEVEN_HOURS_MS;
+    if (stored && Array.isArray(stored.messages) && stored.messages.length > 0) {
       return {
         ...stored,
-        status: isOnline ? 'online' : 'offline',
+        status: 'online',
+        isAiResponding: false,
         lastCheckedAt: Date.now(),
       };
     }
-    // Initially not yet initialized until student visits support or on first session load
     return {
-      initializedAt: 0,
-      status: 'offline',
-      messages: [],
+      status: 'online',
+      isAiResponding: false,
+      messages: [INITIAL_WELCOME_MESSAGE],
       lastCheckedAt: Date.now(),
     };
   });
 
-  const [supportCountdown, setSupportCountdown] = useState<string>('07h 00m 00s');
-
   const checkSupportAvailability = useCallback(() => {
     setSupport((prev) => {
-      if (!prev.initializedAt) {
-        return prev;
-      }
-      const elapsed = Date.now() - prev.initializedAt;
-      const newStatus = elapsed >= SEVEN_HOURS_MS ? 'online' : 'offline';
+      if (prev.status === 'online') return prev;
       const updated: SupportState = {
         ...prev,
-        status: newStatus,
+        status: 'online',
         lastCheckedAt: Date.now(),
       };
       saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
@@ -255,224 +250,162 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const initSupportIfNeeded = useCallback(() => {
     setSupport((prev) => {
-      if (prev.initializedAt > 0) {
-        // Already initialized; check if 7 hours passed
-        const elapsed = Date.now() - prev.initializedAt;
-        const newStatus = elapsed >= SEVEN_HOURS_MS ? 'online' : 'offline';
-        const updated: SupportState = {
-          ...prev,
-          status: newStatus,
-          lastCheckedAt: Date.now(),
-        };
-        saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-        return updated;
-      }
-      // Fresh first initialization
-      const now = Date.now();
+      if (prev.messages && prev.messages.length > 0) return prev;
       const updated: SupportState = {
-        initializedAt: now,
-        status: 'offline',
-        messages: [
-          {
-            id: 'msg-welcome-sys',
-            sender: 'system',
-            senderName: 'Atelier Portal Protocol',
-            text: 'Welcome to the CLAUDE × SHEIN Student Support Center. Connect directly with Professor Burzin and faculty mentors.',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isNotice: true,
-          },
-        ],
-        lastCheckedAt: now,
+        status: 'online',
+        isAiResponding: false,
+        messages: [INITIAL_WELCOME_MESSAGE],
+        lastCheckedAt: Date.now(),
       };
       saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
       return updated;
     });
   }, []);
 
-  // Support countdown live update loop while page is active
-  useEffect(() => {
-    const updateCountdown = () => {
-      if (!support.initializedAt) {
-        setSupportCountdown('07h 00m 00s');
-        return;
-      }
-      const elapsed = Date.now() - support.initializedAt;
-      const remaining = SEVEN_HOURS_MS - elapsed;
+  // Send a message in support chat with Gemini AI response
+  const sendChatMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim() || support.isAiResponding) return;
 
-      if (remaining <= 0) {
-        setSupportCountdown('00h 00m 00s');
-        if (support.status !== 'online') {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const userMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        sender: 'student',
+        senderName: profile.name || 'Rajveer Kol',
+        text: text.trim(),
+        timestamp: timeStr,
+      };
+
+      const updatedHistory = [...support.messages, userMsg];
+
+      // Optimistically update with student's message
+      setSupport((prev) => {
+        const next: SupportState = {
+          ...prev,
+          status: 'online',
+          isAiResponding: true,
+          messages: updatedHistory,
+        };
+        saveToStorage(STORAGE_KEYS.SUPPORT_STATE, next);
+        return next;
+      });
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: updatedHistory.map((m) => ({
+              sender: m.sender,
+              text: m.text,
+            })),
+          }),
+        });
+
+        const data = await response.json();
+        const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (response.ok && data.success && data.text) {
+          const aiMsg: ChatMessage = {
+            id: `msg-ai-${Date.now()}`,
+            sender: 'assistant',
+            senderName: 'AI Support Assistant',
+            text: data.text,
+            timestamp: replyTime,
+            modelUsed: data.modelUsed,
+          };
+
           setSupport((prev) => {
             const next: SupportState = {
               ...prev,
               status: 'online',
-              lastCheckedAt: Date.now(),
+              isAiResponding: false,
+              messages: [...prev.messages, aiMsg],
+            };
+            saveToStorage(STORAGE_KEYS.SUPPORT_STATE, next);
+            return next;
+          });
+        } else {
+          // Failure message: friendly service message without falsely claiming AI responded
+          const errorNotice: ChatMessage = {
+            id: `msg-err-${Date.now()}`,
+            sender: 'system',
+            senderName: 'AI Support Service Notice',
+            text:
+              data?.error ||
+              'Our AI assistant is temporarily unavailable. Please try again shortly.',
+            timestamp: replyTime,
+            isNotice: true,
+          };
+
+          setSupport((prev) => {
+            const next: SupportState = {
+              ...prev,
+              status: 'online',
+              isAiResponding: false,
+              messages: [...prev.messages, errorNotice],
             };
             saveToStorage(STORAGE_KEYS.SUPPORT_STATE, next);
             return next;
           });
         }
-      } else {
-        const hours = Math.floor(remaining / (1000 * 60 * 60));
-        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-        setSupportCountdown(
-          `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`
-        );
-      }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [support.initializedAt, support.status]);
-
-  // Send a message in support chat
-  const sendChatMessage = useCallback((text: string) => {
-    if (!text.trim()) return;
-
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      sender: 'student',
-      senderName: profile.name || 'Rajveer Kol',
-      text: text.trim(),
-      timestamp: timeStr,
-    };
-
-    setSupport((prev) => {
-      const isOnline = prev.status === 'online';
-      const updatedMessages = [...prev.messages, userMsg];
-
-      // Add local delivery notice
-      if (!isOnline) {
-        const offlineNotice: ChatMessage = {
-          id: `msg-notice-${Date.now() + 1}`,
+      } catch (err: any) {
+        console.error('Chat error:', err);
+        const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const fallbackNotice: ChatMessage = {
+          id: `msg-err-${Date.now()}`,
           sender: 'system',
-          senderName: 'System Notice',
-          text: 'Notice: Support is currently offline. Your message has been saved locally and cannot be delivered to an external professor.',
-          timestamp: timeStr,
+          senderName: 'AI Support Service Notice',
+          text: 'Our AI assistant is temporarily unavailable. Please try again shortly.',
+          timestamp: replyTime,
           isNotice: true,
-        };
-        updatedMessages.push(offlineNotice);
-      } else {
-        const onlineNotice: ChatMessage = {
-          id: `msg-notice-${Date.now() + 1}`,
-          sender: 'system',
-          senderName: 'System Notice',
-          text: 'Notice: This is a frontend-only student portal conversation. Messages are stored locally in your browser and are not transmitted to an actual external person.',
-          timestamp: timeStr,
-          isNotice: true,
-        };
-        updatedMessages.push(onlineNotice);
-      }
-
-      const updated: SupportState = {
-        ...prev,
-        messages: updatedMessages,
-      };
-      saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-      return updated;
-    });
-
-    // If online, simulate thoughtful response from Professor Burzin / Assistant
-    if (support.status === 'online') {
-      setTimeout(() => {
-        const timeReply = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const lower = text.toLowerCase();
-        let replyText = `Hello Rajveer. I have reviewed your submission. Your 100% attendance and flawless coursework record across all 4 foundational modules demonstrate remarkable dedication. Let me know how I can further assist your academic direction.`;
-
-        if (lower.includes('shein') || lower.includes('cloth') || lower.includes('reward') || lower.includes('benefit') || lower.includes('policy')) {
-          replyText = `Regarding the SHEIN clothing benefits policy: As an active student with 100% attendance, you are eligible under the seasonal student capsule policy. Your voucher allocation is verified against your student ID (${profile.studentId}). You may review the full policy tier on the Rewards & Benefits tab.`;
-        } else if (lower.includes('course') || lower.includes('grade') || lower.includes('next') || lower.includes('certificate')) {
-          replyText = `You have completed all 4 core courses (Web Development, Python, UI/UX Design, and Digital Business) with top marks. New advanced atelier electives will be announced when available. You can also view and download your certificates directly from My Courses.`;
-        } else if (lower.includes('attendance') || lower.includes('session')) {
-          replyText = `Your attendance stands at a perfect 30 out of 30 sessions (100%). You have received the Perfect Attendance achievement badge on your profile.`;
-        }
-
-        const replyMsg: ChatMessage = {
-          id: `msg-reply-${Date.now()}`,
-          sender: 'burzin',
-          senderName: 'Professor Burzin (Local Assistant)',
-          text: replyText,
-          timestamp: timeReply,
         };
 
         setSupport((prev) => {
-          const updated: SupportState = {
+          const next: SupportState = {
             ...prev,
-            messages: [...prev.messages, replyMsg],
+            status: 'online',
+            isAiResponding: false,
+            messages: [...prev.messages, fallbackNotice],
           };
-          saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-          return updated;
+          saveToStorage(STORAGE_KEYS.SUPPORT_STATE, next);
+          return next;
         });
-      }, 750);
-    }
-  }, [profile.name, profile.studentId, support.status]);
+      }
+    },
+    [profile.name, support.isAiResponding, support.messages]
+  );
 
   // Clear chat
   const clearSupportChat = useCallback(() => {
-    setSupport((prev) => {
-      const updated: SupportState = {
-        ...prev,
-        messages: [],
-      };
-      saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-      return updated;
-    });
-  }, []);
-
-  // Reset support session to initial offline state (re-starts the 7-hour timer)
-  const resetSupportSession = useCallback(() => {
-    const now = Date.now();
-    const updated: SupportState = {
-      initializedAt: now,
-      status: 'offline',
-      messages: [
-        {
-          id: `msg-reset-${now}`,
-          sender: 'system',
-          senderName: 'System Notice',
-          text: 'Support session has been reset. The 7-hour offline window is active.',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isNotice: true,
-        },
-      ],
-      lastCheckedAt: now,
-    };
-    setSupport(updated);
-    saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-  }, []);
-
-  // Fast-forward support to online (for developer/grader convenience)
-  const fastForwardSupportOnline = useCallback(() => {
-    const eightHoursAgo = Date.now() - (8 * 60 * 60 * 1000);
-    const updated: SupportState = {
-      ...support,
-      initializedAt: eightHoursAgo,
+    const next: SupportState = {
       status: 'online',
-      lastCheckedAt: Date.now(),
+      isAiResponding: false,
       messages: [
-        ...support.messages,
         {
-          id: `msg-fastforward-${Date.now()}`,
-          sender: 'system',
-          senderName: 'System Notice',
-          text: 'Simulation: Support session has been fast-forwarded beyond 7 hours. Professor Burzin is now ONLINE.',
+          id: `msg-welcome-${Date.now()}`,
+          sender: 'assistant',
+          senderName: 'AI Support Assistant',
+          text: 'Welcome to the CLAUDE × SHEIN AI Student Support Center. I am your academic AI assistant. How can I assist you today with your courses, attendance, Student ID card, or SHEIN clothing benefits?',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isNotice: true,
         },
       ],
+      lastCheckedAt: Date.now(),
     };
-    setSupport(updated);
-    saveToStorage(STORAGE_KEYS.SUPPORT_STATE, updated);
-  }, [support]);
+    setSupport(next);
+    saveToStorage(STORAGE_KEYS.SUPPORT_STATE, next);
+  }, []);
 
-  // Contact Professor helper
-  const contactProfessor = useCallback((_prefillTopic?: string) => {
-    setActivePage('support');
-    initSupportIfNeeded();
-  }, [initSupportIfNeeded, setActivePage]);
+  // Contact Professor helper: navigates to support page
+  const contactProfessor = useCallback(
+    (_prefillTopic?: string) => {
+      setActivePage('support');
+      initSupportIfNeeded();
+    },
+    [initSupportIfNeeded, setActivePage]
+  );
 
   // Reset all application data
   const resetAllData = useCallback(() => {
@@ -483,12 +416,11 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setNotifications(INITIAL_NOTIFICATIONS);
     setSettings(INITIAL_SETTINGS);
     setActivePageState('dashboard');
-    const now = Date.now();
     const initialSup: SupportState = {
-      initializedAt: now,
-      status: 'offline',
-      messages: [],
-      lastCheckedAt: now,
+      status: 'online',
+      isAiResponding: false,
+      messages: [INITIAL_WELCOME_MESSAGE],
+      lastCheckedAt: Date.now(),
     };
     setSupport(initialSup);
   }, []);
@@ -517,14 +449,11 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateSettings,
       resetAllData,
       support,
-      supportCountdown,
-      isSupportInitialized: support.initializedAt > 0,
+      isSupportInitialized: true,
       initSupportIfNeeded,
       checkSupportAvailability,
       sendChatMessage,
       clearSupportChat,
-      resetSupportSession,
-      fastForwardSupportOnline,
       contactProfessor,
       activeCourseModal,
       setActiveCourseModal,
@@ -554,13 +483,10 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateSettings,
       resetAllData,
       support,
-      supportCountdown,
       initSupportIfNeeded,
       checkSupportAvailability,
       sendChatMessage,
       clearSupportChat,
-      resetSupportSession,
-      fastForwardSupportOnline,
       contactProfessor,
       activeCourseModal,
       activeAchievementModal,
