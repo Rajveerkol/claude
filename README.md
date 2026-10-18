@@ -29,7 +29,23 @@ An interactive, frontend-only luxury student learning portal combining high-fash
    - Student Status: **Active**
    - Local edit modal for profile fields, bio, and initials, persisted in `localStorage`.
 
-3. **Dashboard Overview**
+3. **Digital Student ID Card (`My Student ID`)**
+   - High-fidelity realistic student credential card with luxury ivory and obsidian finishes.
+   - Front-side and back-side interactive 3D flip inspection.
+   - Verified student details:
+     - Student Name: **Rajveer Kol**
+     - Date of Birth: **11/06/2012** (exact format)
+     - Role: **Student**
+     - Faculty Mentor: **Professor Burzin**
+     - Verified Attendance: **100%**
+     - Membership Duration: **1 Year**
+     - Institute: **CLAUDE × SHEIN**
+     - Reference ID: **REF: CS-8842-RK**
+   - Personal photograph preview with real-time "Change Photo" upload (compressed & saved locally) and "Reset Photo" action.
+   - Vector QR visual pattern with central monogram and magnetic strip / barcode styling on the reverse.
+   - High-resolution **PNG export** via `html-to-image` and standard card-sized **Print** layout via `@media print`.
+
+4. **Dashboard Overview**
    - Welcome banner: *"Welcome back, Rajveer"* & *"Your learning journey, all in one place."*
    - 4 Core Stat Cards: Attendance (100%), Courses Completed (4), Learning Streak (30 Days), Membership (1 Year).
    - Recent Activity timeline, Course Progress breakdown, Student Overview, and Faculty Mentor card.

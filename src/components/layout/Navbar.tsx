@@ -4,6 +4,7 @@ import {
   Sun,
   Moon,
   User,
+  CreditCard,
   Settings,
   Headphones,
   CheckCheck,
@@ -71,6 +72,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         return 'Overview';
       case 'profile':
         return 'Student Profile';
+      case 'id-card':
+        return 'My Student ID Card';
       case 'courses':
         return 'My Courses';
       case 'attendance':
@@ -332,6 +335,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <User className="w-4 h-4 text-neutral-500" />
                     My Student Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActivePage('id-card');
+                      setIsProfileOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-softgray dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <CreditCard className="w-4 h-4 text-burgundy" />
+                    My Student ID Card
                   </button>
                   <button
                     onClick={() => {

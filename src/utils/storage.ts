@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   SETTINGS: 'claude_shein_settings_v1',
   SUPPORT_STATE: 'claude_shein_support_state_v1',
   ACTIVE_PAGE: 'claude_shein_active_page_v1',
+  ID_PHOTO: 'claude_shein_id_photo_v1',
 } as const;
 
 export function loadFromStorage<T>(key: string, defaultValue: T): T {
@@ -42,5 +43,39 @@ export function removeFromStorage(key: string): void {
 export function clearAllPortalStorage(): void {
   Object.values(STORAGE_KEYS).forEach((k) => {
     removeFromStorage(k);
+  });
+}
+
+// Compress and store custom uploaded image data cleanly
+export function compressImage(file: File, maxWidth = 800, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const elem = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        elem.width = width;
+        elem.height = height;
+        const ctx = elem.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(elem.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
   });
 }

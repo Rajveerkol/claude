@@ -2,6 +2,7 @@ import type { StudentProfile, Course, AttendanceRecord, Achievement, RewardBenef
 
 export const INITIAL_PROFILE: StudentProfile = {
   name: 'Rajveer Kol',
+  dob: '11/06/2012',
   role: 'Student',
   professor: 'Burzin',
   attendance: 100,
@@ -16,6 +17,7 @@ export const INITIAL_PROFILE: StudentProfile = {
   academicYear: 'Year 2 (Upper Division)',
   joinedNotice: 'Joined 1 year ago',
   avatarBgColor: '#8D2635',
+  photoUrl: '/rajveer-photo.jpg',
 };
 
 export const INITIAL_COURSES: Course[] = [

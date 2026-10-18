@@ -75,3 +75,38 @@
 .dark .border-luxury {
   border-color: #2E2E2E;
 }
+
+/* Print-friendly ID card layout */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  header, aside, footer, nav, .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-only-card-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    padding: 20mm !important;
+  }
+
+  .id-card-element {
+    box-shadow: none !important;
+    border: 1px solid #C5AC91 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+

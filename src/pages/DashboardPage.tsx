@@ -10,6 +10,7 @@ import {
   Award,
   Headphones,
   User,
+  CreditCard,
   ChevronRight,
 } from 'lucide-react';
 import { usePortal } from '../context/PortalContext';
@@ -126,6 +127,13 @@ export const DashboardPage: React.FC = () => {
 
           {/* Quick actions row */}
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setActivePage('id-card')}
+              className="px-4 py-2.5 rounded-xl bg-champagne-100 hover:bg-champagne-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-richblack dark:text-ivory-100 text-xs sm:text-sm font-semibold transition-all border border-champagne-300 dark:border-neutral-700 flex items-center gap-1.5"
+            >
+              <CreditCard className="w-4 h-4 text-burgundy" />
+              My Student ID
+            </button>
             <button
               onClick={() => setActivePage('courses')}
               className="px-4 py-2.5 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center gap-1.5"

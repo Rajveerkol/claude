@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   User,
+  CreditCard,
   Award,
   ShieldCheck,
   CheckCircle2,
@@ -18,6 +19,7 @@ export const ProfilePage: React.FC = () => {
     setIsEditProfileOpen,
     contactProfessor,
     setActivePage,
+    idPhoto,
   } = usePortal();
 
   return (
@@ -38,13 +40,22 @@ export const ProfilePage: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsEditProfileOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
-          >
-            <Edit3 className="w-4 h-4" />
-            Edit Profile
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setActivePage('id-card')}
+              className="px-4 py-2.5 rounded-xl bg-champagne-100 hover:bg-champagne-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-richblack dark:text-ivory-100 text-xs sm:text-sm font-semibold transition-all border border-champagne-300 dark:border-neutral-700 flex items-center justify-center gap-2 shadow-sm"
+            >
+              <CreditCard className="w-4 h-4 text-burgundy" />
+              View Digital Student ID
+            </button>
+            <button
+              onClick={() => setIsEditProfileOpen(true)}
+              className="px-5 py-2.5 rounded-xl bg-burgundy hover:bg-burgundy-600 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
+            >
+              <Edit3 className="w-4 h-4" />
+              Edit Profile
+            </button>
+          </div>
         </div>
       </section>
 
@@ -54,8 +65,16 @@ export const ProfilePage: React.FC = () => {
           {/* Avatar & Key Identifiers */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-burgundy text-white font-serif font-bold text-3xl flex items-center justify-center shadow-lg ring-4 ring-champagne-200 dark:ring-neutral-700 select-none">
-                {profile.initials || 'RK'}
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-burgundy text-white font-serif font-bold text-3xl flex items-center justify-center shadow-lg ring-4 ring-champagne-200 dark:ring-neutral-700 select-none">
+                {idPhoto ? (
+                  <img
+                    src={idPhoto}
+                    alt={profile.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  profile.initials || 'RK'
+                )}
               </div>
               <span
                 className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-3 border-white dark:border-[#1E1E1E]"
@@ -263,6 +282,10 @@ export const ProfilePage: React.FC = () => {
             </h4>
 
             <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1.5 border-b border-neutral-100 dark:border-neutral-800">
+                <span className="text-neutral-500">Date of Birth:</span>
+                <span className="font-mono font-medium text-richblack dark:text-neutral-200">11/06/2012</span>
+              </div>
               <div className="flex justify-between py-1.5 border-b border-neutral-100 dark:border-neutral-800">
                 <span className="text-neutral-500">Email:</span>
                 <span className="font-medium text-richblack dark:text-neutral-200">{profile.email}</span>

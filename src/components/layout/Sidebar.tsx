@@ -2,6 +2,7 @@ import React from 'react';
 import {
   LayoutDashboard,
   User,
+  CreditCard,
   BookOpen,
   CalendarCheck,
   Award,
@@ -48,6 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'id-card', label: 'My Student ID', icon: CreditCard, badge: 'Card', badgeColor: 'bg-champagne-200 text-richblack dark:bg-neutral-800 dark:text-champagne-200' },
     { id: 'courses', label: 'My Courses', icon: BookOpen, badge: '4 Done', badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' },
     { id: 'attendance', label: 'Attendance', icon: CalendarCheck, badge: '100%', badgeColor: 'bg-burgundy/10 text-burgundy dark:text-burgundy-200' },
     { id: 'achievements', label: 'Achievements', icon: Award },

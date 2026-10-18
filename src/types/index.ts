@@ -1,6 +1,7 @@
 export type PageId =
   | 'dashboard'
   | 'profile'
+  | 'id-card'
   | 'courses'
   | 'attendance'
   | 'achievements'
@@ -11,6 +12,7 @@ export type PageId =
 
 export interface StudentProfile {
   name: string;
+  dob: string;
   role: string;
   professor: string;
   attendance: number;
@@ -25,6 +27,7 @@ export interface StudentProfile {
   academicYear: string;
   joinedNotice: string;
   avatarBgColor?: string;
+  photoUrl?: string;
 }
 
 export interface Course {

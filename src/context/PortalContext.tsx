@@ -24,6 +24,7 @@ import {
   STORAGE_KEYS,
   loadFromStorage,
   saveToStorage,
+  removeFromStorage,
   clearAllPortalStorage,
 } from '../utils/storage';
 
@@ -64,6 +65,10 @@ interface PortalContextType {
   setActiveAchievementModal: (achievement: Achievement | null) => void;
   isEditProfileOpen: boolean;
   setIsEditProfileOpen: (open: boolean) => void;
+  // Student ID Photo management
+  idPhoto: string;
+  updateIdPhoto: (dataUrl: string) => void;
+  resetIdPhoto: () => void;
 }
 
 const PortalContext = createContext<PortalContextType | undefined>(undefined);
@@ -88,6 +93,31 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const updateProfile = useCallback((updated: Partial<StudentProfile>) => {
     setProfile((prev) => {
       const next = { ...prev, ...updated };
+      saveToStorage(STORAGE_KEYS.PROFILE, next);
+      return next;
+    });
+  }, []);
+
+  // Student ID Photo state with local persistence
+  const [idPhoto, setIdPhoto] = useState<string>(() =>
+    loadFromStorage<string>(STORAGE_KEYS.ID_PHOTO, '/rajveer-photo.jpg')
+  );
+
+  const updateIdPhoto = useCallback((dataUrl: string) => {
+    setIdPhoto(dataUrl);
+    saveToStorage(STORAGE_KEYS.ID_PHOTO, dataUrl);
+    setProfile((prev) => {
+      const next = { ...prev, photoUrl: dataUrl };
+      saveToStorage(STORAGE_KEYS.PROFILE, next);
+      return next;
+    });
+  }, []);
+
+  const resetIdPhoto = useCallback(() => {
+    setIdPhoto('/rajveer-photo.jpg');
+    removeFromStorage(STORAGE_KEYS.ID_PHOTO);
+    setProfile((prev) => {
+      const next = { ...prev, photoUrl: '/rajveer-photo.jpg' };
       saveToStorage(STORAGE_KEYS.PROFILE, next);
       return next;
     });
@@ -448,6 +478,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const resetAllData = useCallback(() => {
     clearAllPortalStorage();
     setProfile(INITIAL_PROFILE);
+    setIdPhoto('/rajveer-photo.jpg');
     setCourses(INITIAL_COURSES);
     setNotifications(INITIAL_NOTIFICATIONS);
     setSettings(INITIAL_SETTINGS);
@@ -501,6 +532,9 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setActiveAchievementModal,
       isEditProfileOpen,
       setIsEditProfileOpen,
+      idPhoto,
+      updateIdPhoto,
+      resetIdPhoto,
     }),
     [
       activePage,
@@ -531,6 +565,9 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       activeCourseModal,
       activeAchievementModal,
       isEditProfileOpen,
+      idPhoto,
+      updateIdPhoto,
+      resetIdPhoto,
     ]
   );
 

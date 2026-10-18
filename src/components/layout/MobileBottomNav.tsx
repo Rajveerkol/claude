@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, BookOpen, CalendarCheck, Gift, Headphones } from 'lucide-react';
+import { LayoutDashboard, CreditCard, BookOpen, Gift, Headphones } from 'lucide-react';
 import { usePortal } from '../../context/PortalContext';
 import type { PageId } from '../../types';
 
@@ -8,8 +8,8 @@ export const MobileBottomNav: React.FC = () => {
 
   const items: { id: PageId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+    { id: 'id-card', label: 'ID Card', icon: CreditCard },
     { id: 'courses', label: 'Courses', icon: BookOpen },
-    { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
     { id: 'rewards', label: 'Rewards', icon: Gift },
     { id: 'support', label: 'Support', icon: Headphones },
   ];

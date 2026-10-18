@@ -5,6 +5,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { StudentIdPage } from './pages/StudentIdPage';
 import { CoursesPage } from './pages/CoursesPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { AchievementsPage } from './pages/AchievementsPage';
@@ -27,6 +28,8 @@ export const AppContent: React.FC = () => {
         return <DashboardPage />;
       case 'profile':
         return <ProfilePage />;
+      case 'id-card':
+        return <StudentIdPage />;
       case 'courses':
         return <CoursesPage />;
       case 'attendance':
